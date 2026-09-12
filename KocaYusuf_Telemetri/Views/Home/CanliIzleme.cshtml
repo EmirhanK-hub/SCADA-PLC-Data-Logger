@@ -1,0 +1,771 @@
+﻿@{
+    ViewData["Title"] = "Canlı İzleme (Dijital İkiz)";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Koca Yusuf System Status</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-void: #0a0d12;
+            --bg-panel: #10141b;
+            --bg-panel-raised: #141922;
+            --border-line: #1e2733;
+            --border-line-bright: #2a3648;
+            --text-primary: #e7edf5;
+            --text-muted: #7c8aa0;
+            --text-faint: #4a5568;
+            --accent-cyan: #2dd4e8;
+            --accent-cyan-dim: rgba(45, 212, 232, 0.15);
+            --status-green: #2ecc82;
+            --status-amber: #f0a83c;
+            --status-red: #ef4a5f;
+            --status-blue: #4a90f0;
+            --font-display: 'Chakra Petch', sans-serif;
+            --font-body: 'IBM Plex Sans', sans-serif;
+            --font-mono: 'IBM Plex Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-void);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .scada-wrapper {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            background: linear-gradient(var(--bg-void), var(--bg-void)), repeating-linear-gradient(0deg, rgba(45,212,232,0.025) 0px, rgba(45,212,232,0.025) 1px, transparent 1px, transparent 32px), repeating-linear-gradient(90deg, rgba(45,212,232,0.025) 0px, rgba(45,212,232,0.025) 1px, transparent 1px, transparent 32px);
+        }
+
+        .scada-sidebar {
+            width: 230px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-line);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 18px;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding-bottom: 22px;
+            border-bottom: 1px solid var(--border-line);
+        }
+
+            .sidebar-brand img {
+                max-width: 108px;
+                height: auto;
+                filter: brightness(0) invert(1);
+            }
+
+            .sidebar-brand h6 {
+                font-family: var(--font-display);
+                letter-spacing: 0.5px;
+            }
+
+            .sidebar-brand small {
+                font-family: var(--font-mono);
+                font-size: 9px !important;
+                letter-spacing: 2px !important;
+                color: var(--accent-cyan) !important;
+            }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+            .sidebar-menu a {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 11px 14px;
+                color: var(--text-muted);
+                text-decoration: none;
+                border-radius: 6px;
+                font-size: 13px;
+                font-weight: 500;
+                border-left: 3px solid transparent;
+                transition: all 0.2s ease;
+            }
+
+                .sidebar-menu a i {
+                    width: 16px;
+                    text-align: center;
+                    color: var(--text-faint);
+                    transition: color 0.2s ease;
+                }
+
+                .sidebar-menu a:hover, .sidebar-menu a.active {
+                    background: var(--bg-panel-raised);
+                    color: var(--text-primary);
+                    border-left: 3px solid var(--accent-cyan);
+                }
+
+                    .sidebar-menu a:hover i, .sidebar-menu a.active i {
+                        color: var(--accent-cyan);
+                    }
+
+        .scada-main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 22px 24px;
+            overflow-y: auto;
+        }
+
+        .scada-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            background: var(--bg-panel);
+            padding: 16px 24px;
+            border-radius: 8px;
+            border: 1px solid var(--border-line);
+        }
+
+            .scada-header h4 {
+                font-family: var(--font-display);
+                font-weight: 600;
+                letter-spacing: 0.3px;
+            }
+
+            .scada-header p {
+                font-family: var(--font-mono);
+                font-size: 11px;
+                letter-spacing: 0.3px;
+            }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-panel-raised);
+            border: 1px solid var(--border-line-bright);
+            color: var(--status-green);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            padding: 8px 16px;
+            border-radius: 5px;
+        }
+
+            .status-pill .dot-live {
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background: var(--status-green);
+                box-shadow: 0 0 8px var(--status-green);
+                animation: dotlive 1.8s infinite ease-in-out;
+            }
+        @@keyframes dotlive {
+            0%, 100%
+
+        {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.35;
+        }
+
+        }
+
+        .machine-container {
+            position: relative;
+            width: 100%;
+            background: #c7cbd1;
+            border: 1px solid var(--border-line);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 20px 45px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.02);
+            padding: 0;
+            min-height: 560px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .machine-container::before, .machine-container::after, .corner-br, .corner-bl {
+                content: '';
+                position: absolute;
+                width: 22px;
+                height: 22px;
+                border-color: var(--accent-cyan);
+                z-index: 15;
+                opacity: 0.75;
+                pointer-events: none;
+            }
+
+            .machine-container::before {
+                top: 10px;
+                left: 10px;
+                border-top: 2px solid;
+                border-left: 2px solid;
+            }
+
+            .machine-container::after {
+                top: 10px;
+                right: 10px;
+                border-top: 2px solid;
+                border-right: 2px solid;
+            }
+
+        .corner-bl {
+            bottom: 10px;
+            left: 10px;
+            border-bottom: 2px solid;
+            border-left: 2px solid;
+        }
+
+        .corner-br {
+            bottom: 10px;
+            right: 10px;
+            border-bottom: 2px solid;
+            border-right: 2px solid;
+        }
+
+        .machine-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .scan-sweep {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 8;
+            overflow: hidden;
+        }
+
+            .scan-sweep::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -30%;
+                width: 30%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(45,212,232,0.10), transparent);
+                animation: sweep 6s linear infinite;
+            }
+        @@keyframes sweep {
+            0%
+
+        {
+            left: -30%;
+        }
+
+        100% {
+            left: 130%;
+        }
+
+        }
+
+        .hotspot {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+        }
+
+        .dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            position: absolute;
+            top: 9px;
+            left: 9px;
+            z-index: 12;
+            box-shadow: 0 0 12px currentColor, inset 0 0 0 2px rgba(0,0,0,0.35);
+            border: 2px solid rgba(10,13,18,0.7);
+        }
+
+        .pulse-ring {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 11;
+            animation: pulse 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+        }
+        @@keyframes pulse {
+            0%
+
+        {
+            transform: scale(0.75);
+            opacity: 0.9;
+        }
+
+        70% {
+            transform: scale(3);
+            opacity: 0;
+        }
+
+        100% {
+            transform: scale(3);
+            opacity: 0;
+        }
+
+        }
+
+        .green {
+            background-color: var(--status-green);
+            color: var(--status-green);
+        }
+
+        .yellow {
+            background-color: var(--status-amber);
+            color: var(--status-amber);
+        }
+
+        .red {
+            background-color: var(--status-red);
+            color: var(--status-red);
+        }
+
+        .blue {
+            background-color: var(--status-blue);
+            color: var(--status-blue);
+        }
+
+        .pulse-ring.green {
+            background-color: rgba(46, 204, 130, 0.55);
+        }
+
+        .pulse-ring.yellow {
+            background-color: rgba(240, 168, 60, 0.55);
+        }
+
+        .pulse-ring.red {
+            background-color: rgba(239, 74, 95, 0.55);
+        }
+
+        .pulse-ring.blue {
+            background-color: rgba(74, 144, 240, 0.55);
+        }
+
+        .status-badge {
+            position: absolute;
+            background: rgba(10, 13, 18, 0.92);
+            border: 1px solid var(--border-line-bright);
+            border-left: 2px solid currentColor;
+            padding: 7px 13px;
+            border-radius: 4px;
+            pointer-events: none;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.5);
+            z-index: 20;
+            top: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+        }
+
+        .badge-title {
+            display: block;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 9px;
+            letter-spacing: 1px;
+            margin-bottom: 3px;
+            text-align: center;
+        }
+
+        .badge-status {
+            display: block;
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 11px;
+            letter-spacing: 0.3px;
+            text-align: center;
+        }
+
+        .telemetry-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-line);
+            border-radius: 8px;
+            padding: 18px;
+            position: relative;
+        }
+
+            .telemetry-card.accent-live {
+                border-color: var(--accent-cyan-dim);
+                box-shadow: 0 0 0 1px var(--accent-cyan-dim), 0 8px 24px rgba(0,0,0,0.35);
+            }
+
+        .card-label {
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+
+        .telemetry-value {
+            font-family: var(--font-display);
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.5px;
+        }
+
+        .telemetry-sub {
+            font-family: var(--font-mono);
+            font-size: 11px;
+        }
+
+        .progress-container {
+            height: 5px;
+            background: var(--bg-panel-raised);
+            border: 1px solid var(--border-line);
+            border-radius: 3px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scada-wrapper">
+        <div class="scada-sidebar">
+            <div class="sidebar-brand">
+                <img src="/resimler/kocayusuf_logo_with_circle.png" alt="Firma Logo">
+                <div>
+                    <h6 class="m-0 fw-bold text-white">KOCA YUSUF</h6>
+                    <small class="text-muted">SYSTEM STATUS</small>
+                </div>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="/Home/Index"><i class="fas fa-home"></i> Ana Sayfa</a></li>
+                <li><a href="#" onclick="tamEkranToggle()" class="active"><i class="fas fa-expand"></i> Tam Ekran</a></li>
+            </ul>
+        </div>
+
+        <div class="scada-main">
+            <div class="scada-header">
+                <div>
+                    <h4 class="text-white mb-1">Koca Yusuf System Status</h4>
+                    <p class="text-muted m-0">Endüstriyel hat gerçek zamanlı SQL dijital ikiz paneli.</p>
+                </div>
+                <div class="status-pill">
+                    <span class="dot-live"></span> PLC ÇEVRİMİÇİ
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-xl-9 col-lg-8">
+                    <div class="machine-container" id="makineAlani">
+                        <img src="/resimler/ERS_6058.jpg" alt="Koca Yusuf Makinesi" class="machine-image">
+                        <div class="scan-sweep"></div>
+                        <div class="corner-bl"></div>
+                        <div class="corner-br"></div>
+
+                        <!-- Nokta 1: Kontrol Paneli (Ortadaki Ekran) -->
+                        <div class="hotspot" style="top: 28%; left: 36%;" onclick="detayGoster('panel')">
+                            <div id="ring-panel" class="pulse-ring green"></div>
+                            <div id="dot-panel" class="dot green"></div>
+                            <div class="status-badge text-success" id="badge-panel">
+                                <span class="badge-title">KONTROL PANELİ</span>
+                                <span class="badge-status" id="text-panel">YÜKLENİYOR...</span>
+                            </div>
+                        </div>
+
+                        <!-- Nokta 2: Giriş Bandı (Uzun Masa) -->
+                        <div class="hotspot" style="top: 48%; left: 58%;" onclick="detayGoster('giris')">
+                            <div id="ring-giris" class="pulse-ring yellow"></div>
+                            <div id="dot-giris" class="dot yellow"></div>
+                            <div class="status-badge text-warning" id="badge-giris">
+                                <span class="badge-title">GİRİŞ BANDI</span>
+                                <span class="badge-status" id="text-giris">YÜKLENİYOR...</span>
+                            </div>
+                        </div>
+
+                        <!-- Nokta 3: Pres Gövdesi (Soldaki Büyük Beyaz Pres) -->
+                        <div class="hotspot" style="top: 32%; left: 16%;" onclick="detayGoster('pres')">
+                            <div id="ring-pres" class="pulse-ring green"></div>
+                            <div id="dot-pres" class="dot green"></div>
+                            <div class="status-badge text-success" id="badge-pres">
+                                <span class="badge-title">PROCESSING UNIT</span>
+                                <span class="badge-status" id="text-pres">YÜKLENİYOR...</span>
+                            </div>
+                        </div>
+
+                        <!-- Nokta 4: Pompalar (Presin Sol Üstündeki Tanklar) -->
+                        <div class="hotspot" style="top: 12%; left: 14%;" onclick="detayGoster('pompalar')">
+                            <div id="ring-pompalar" class="pulse-ring yellow"></div>
+                            <div id="dot-pompalar" class="dot yellow"></div>
+                            <div class="status-badge text-warning" id="badge-pompalar">
+                                <span class="badge-title">YARDIMCI POMPALAR</span>
+                                <span class="badge-status" id="text-pompalar">YÜKLENİYOR...</span>
+                            </div>
+                        </div>
+
+                        <!-- Nokta 5: Elektrik Panosu (En Sağdaki Mavi Kutu) -->
+                        <div class="hotspot" style="top: 42%; left: 82%;" onclick="detayGoster('elektrikPanosu')">
+                            <div id="ring-elektrik" class="pulse-ring blue"></div>
+                            <div id="dot-elektrik" class="dot blue"></div>
+                            <div class="status-badge text-primary" id="badge-elektrik">
+                                <span class="badge-title">ELEKTRİK PANOSU</span>
+                                <span class="badge-status" id="text-elektrik">ENERJİ OK</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-lg-4">
+                    <div class="d-flex flex-column gap-3">
+
+                        <!-- Seçilen Bileşen Bilgisi -->
+                        <div class="telemetry-card accent-live">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="card-label" style="color: var(--accent-cyan);"><i class="fas fa-crosshairs me-1"></i> Seçilen Bileşen</span>
+                                <i class="fas fa-ellipsis-v text-muted" style="font-size: 12px;"></i>
+                            </div>
+                            <div>
+                                <h5 id="bilgi-baslik" class="text-white mb-2" style="font-family: var(--font-display); font-weight: 600;">Bileşen Seçilmedi</h5>
+                                <div class="d-flex justify-content-between text-muted mb-1 telemetry-sub">
+                                    <span>Canlı Durum:</span>
+                                    <strong id="bilgi-durum" class="text-white">-</strong>
+                                </div>
+                                <p id="bilgi-aciklama" class="text-muted small m-0 pt-2 border-top border-secondary">
+                                    Makine üzerindeki sensör noktalarına tıklayarak detaylı SQL verilerini görüntüleyin.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Üretim ve Durum Kutusu -->
+                        <div class="telemetry-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="card-label">Üretim & Sistem</span>
+                                <i class="fas fa-industry" style="color: var(--status-green);"></i>
+                            </div>
+                            <h3 id="live-uretim" class="text-white telemetry-value mb-2">0 Adet</h3>
+                            <div class="progress-container">
+                                <div id="bar-uretim" class="progress-fill bg-success" style="width: 100%;"></div>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted telemetry-sub mt-2">
+                                <span>Çalışma Modu</span>
+                                <span id="live-mod" class="text-white">Bilinmiyor</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted telemetry-sub mt-1">
+                                <span>Aktif Hata / Alarm</span>
+                                <span id="live-alarm" class="fw-bold" style="color: var(--status-green);">Sistem Normal</span>
+                            </div>
+                        </div>
+
+                        <!-- Sıcaklık Bilgileri -->
+                        <div class="telemetry-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="card-label">Yağ Sıcaklığı (DT82)</span>
+                                <i class="fas fa-thermometer-half" style="color: var(--status-amber);"></i>
+                            </div>
+                            <h3 id="live-yag-sicakligi" class="text-white telemetry-value mb-2">0°C</h3>
+                            <div class="progress-container">
+                                <div id="bar-yag-sicakligi" class="progress-fill bg-warning" style="width: 0%;"></div>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted telemetry-sub mt-2">
+                                <span>Tabla Sıcaklığı (DT126)</span>
+                                <span id="live-tabla-sicakligi" class="text-white">0°C</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted telemetry-sub mt-1">
+                                <span>Hedef Sıcaklık (Set)</span>
+                                <span id="live-hedef-sicakligi" class="fw-bold" style="color: var(--accent-cyan);">0°C</span>
+                            </div>
+                        </div>
+
+                        <!-- Basınç Bilgileri -->
+                        <div class="telemetry-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="card-label">Hidrolik Basınç (DT110)</span>
+                                <i class="fas fa-tachometer-alt" style="color: var(--accent-cyan);"></i>
+                            </div>
+                            <h3 id="live-hidrolik" class="text-white telemetry-value mb-2">0 Bar</h3>
+                            <div class="progress-container">
+                                <div id="bar-hidrolik" class="progress-fill" style="background: var(--accent-cyan); width: 0%;"></div>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted telemetry-sub mt-2">
+                                <span>Ana Hava Basıncı (DT112)</span>
+                                <span id="live-ana-hava" class="text-white">0 Bar</span>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted telemetry-sub mt-1">
+                                <span>Ara Hava Basıncı (DT212)</span>
+                                <span id="live-ara-hava" class="text-white">0 Bar</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let canliData = null;
+        let seciliParca = null;
+
+        // %100 CANLI SQL VERİ ÇEKME DÖNGÜSÜ
+        function ikizVeriCek() {
+            fetch('/Home/CanliVeriGetir')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data) return;
+                    canliData = data;
+
+                    // --- 1. SAĞ PANEL DEĞERLERİNİ GÜNCELLE ---
+
+                    document.getElementById('live-uretim').innerText = (data.uretimAdedi ?? 0) + ' Adet';
+
+                    let modMetni = data.r301_OtomatikMod ? "Otomatik" : (data.r300_ManuelMod ? "Manuel" : "Bilinmiyor");
+                    document.getElementById('live-mod').innerText = modMetni;
+
+                    let alarmMetni = (data.r32_GenelHata || data.dt5011_AktifAlarmKodu > 0)
+                        ? "HATA (K" + (data.dt5011_AktifAlarmKodu ?? 0) + ")"
+                        : "Sistem Normal";
+                    let alarmEl = document.getElementById('live-alarm');
+                    alarmEl.innerText = alarmMetni;
+                    alarmEl.style.color = (data.r32_GenelHata || data.dt5011_AktifAlarmKodu > 0) ? "var(--status-red)" : "var(--status-green)";
+
+                    document.getElementById('live-yag-sicakligi').innerText = (data.presSicakligi ?? 0) + '°C';
+                    document.getElementById('bar-yag-sicakligi').style.width = Math.min((data.presSicakligi / 150) * 100, 100) + '%';
+
+                    document.getElementById('live-tabla-sicakligi').innerText = (data.balonSicakligi ?? 0) + '°C';
+                    document.getElementById('live-hedef-sicakligi').innerText = (data.dt32538_PresSicaklikSet ?? 0) + '°C';
+
+                    document.getElementById('live-hidrolik').innerText = (data.dt110_HidrolikBasincHMI ?? 0) + ' Bar';
+                    document.getElementById('bar-hidrolik').style.width = Math.min((data.dt110_HidrolikBasincHMI / 250) * 100, 100) + '%';
+
+                    document.getElementById('live-ana-hava').innerText = (data.dt112_AnaHavaBasinciHMI ?? 0) + ' Bar';
+                    document.getElementById('live-ara-hava').innerText = (data.dt212_AraHavaBasinciHMI ?? 0) + ' Bar';
+
+                    // --- 2. MAKİNE ÜZERİNDEKİ NOKTALARIN (HOTSPOT) RENK VE YAZILARINI GÜNCELLE ---
+                    gorselGuncelle('panel', data.r98_AcilStopHafizasi ? 'red' : 'green', data.r98_AcilStopHafizasi ? 'ACİL STOP BASILI' : 'SİSTEM NORMAL');
+                    gorselGuncelle('giris', data.r5_MakineCalisiyor ? 'green' : 'yellow', data.r5_MakineCalisiyor ? 'AKTİF' : 'BEKLEMEDE');
+                    gorselGuncelle('pres', data.r32_GenelHata ? 'red' : 'green', data.r32_GenelHata ? 'HATA DURUMU' : 'SQL BAĞLI');
+
+                    let pompaAktif = data.y60_VakumPompasi || data.y61_YagSirkulasyonPompasi;
+                    gorselGuncelle('pompalar', pompaAktif ? 'blue' : 'yellow', pompaAktif ? 'POMPALAR DEVREDE' : 'KAPALI');
+
+                    gorselGuncelle('elektrikPanosu', 'blue', 'ENERJİ OK');
+
+                    // --- 3. TIKLANAN BİLEŞEN VARSA ONUN DETAY KUTUSUNU CANLI TUT ---
+                    if(seciliParca) {
+                        detayGoster(seciliParca);
+                    }
+                })
+                .catch(err => console.error("Dijital İkiz Veri Hatası: ", err));
+        }
+
+        function gorselGuncelle(id, renk, yazi) {
+            let ring = document.getElementById('ring-' + id);
+            let dot = document.getElementById('dot-' + id);
+            let badge = document.getElementById('badge-' + id);
+            let text = document.getElementById('text-' + id);
+
+            if(ring && dot && badge && text) {
+                ring.className = 'pulse-ring ' + renk;
+                dot.className = 'dot ' + renk;
+                badge.className = 'status-badge text-' + (renk === 'red' ? 'danger' : (renk === 'yellow' ? 'warning' : (renk === 'blue' ? 'primary' : 'success')));
+                text.innerText = yazi;
+            }
+        }
+
+        function detayGoster(parcaID) {
+            seciliParca = parcaID;
+            let baslik = "", durum = "", renk = "", aciklama = "";
+            let d = canliData || {};
+
+            switch (parcaID) {
+                case 'panel':
+                    baslik = "HMI Kontrol Paneli";
+                    durum = d.r98_AcilStopHafizasi ? "ACİL STOP BASILI (Kritik)" : "SİSTEM HAZIR";
+                    renk = d.r98_AcilStopHafizasi ? "#ef4a5f" : "#2ecc82";
+                    aciklama = d.r98_AcilStopHafizasi
+                        ? "R98 Hafıza Biti Aktif! İstenen HMI Sayfası: " + (d.dt60_IstenenHMIMesaji ?? 0)
+                        : "Sistem normal. İstenen Sayfa (DT60): " + (d.dt60_IstenenHMIMesaji ?? 0);
+                    break;
+                case 'giris':
+                    baslik = "Giriş Konveyör Bandı";
+                    durum = d.r5_MakineCalisiyor ? "MOTOR ÇALIŞIYOR" : "SİSTEM BEKLEMEDE";
+                    renk = d.r5_MakineCalisiyor ? "#2ecc82" : "#f0a83c";
+                    aciklama = d.r5_MakineCalisiyor ? "R5 Makine Çalışıyor Biti: 1 (Aktif)." : "R5 Makine Çalışıyor Biti: 0 (Pasif).";
+                    break;
+                case 'pres':
+                    baslik = "Hidrolik Presleme Ünitesi";
+                    durum = d.r32_GenelHata ? "BLOKE EDİLDİ (R32)" : "OPTİMİZE (SQL BAĞLI)";
+                    renk = d.r32_GenelHata ? "#ef4a5f" : "#2ecc82";
+                    aciklama = `Sensör Yağ Sıcaklığı: ${d.presSicakligi ?? 0}°C. Uygulanan HMI Hidrolik Basınç: ${d.dt110_HidrolikBasincHMI ?? 0} Bar.`;
+                    break;
+                case 'pompalar':
+                    let pAktif = d.y60_VakumPompasi || d.y61_YagSirkulasyonPompasi;
+                    baslik = "Pompa ve Isıtıcı Grubu";
+                    durum = pAktif ? "POMPALAR DEVREDE" : "BEKLEMEDE VEYA KAPALI";
+                    renk = pAktif ? "#4a90f0" : "#f0a83c";
+                    aciklama = d.y60_VakumPompasi ? "Y60 Vakum Pompası Aktif." : (d.y61_YagSirkulasyonPompasi ? "Y61 Yağ Pompası Aktif." : "Pompalar şu an kapalı.");
+                    break;
+                case 'elektrikPanosu':
+                    baslik = "Ana Elektrik Panosu";
+                    durum = "ENERJİ OK & SÜRÜCÜLER AKTİF";
+                    renk = "#4a90f0";
+                    aciklama = "Sistem beslemesi kararlı.";
+                    break;
+            }
+
+            document.getElementById('bilgi-baslik').innerText = baslik;
+            const durumEl = document.getElementById('bilgi-durum');
+            durumEl.innerText = durum;
+            durumEl.style.color = renk;
+            document.getElementById('bilgi-aciklama').innerText = aciklama;
+        }
+
+        function tamEkranToggle() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        ikizVeriCek();
+        setInterval(ikizVeriCek, 1000);
+    </script>
+</body>
+</html>

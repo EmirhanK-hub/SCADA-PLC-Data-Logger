@@ -1,0 +1,222 @@
+﻿@model KocaYusuf_Telemetri.Models.Makine
+@{
+    ViewData["Title"] = Model.MakineAdi + " Detayları";
+}
+
+<style>
+    .ky-detail-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: var(--ky-border);
+        border-top: 1px solid var(--ky-border);
+        border-bottom: 1px solid var(--ky-border);
+    }
+
+    .ky-detail-box {
+        background: var(--ky-bg-elevated);
+        padding: 1.1rem 1.4rem;
+    }
+
+        .ky-detail-box .lbl {
+            font-size: 0.7rem;
+            color: var(--ky-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 0.35rem;
+            display: block;
+        }
+
+        .ky-detail-box .val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--ky-text);
+        }
+
+    .ky-sensor-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1px;
+        background: var(--ky-border);
+    }
+
+    .ky-sensor-cell {
+        background: var(--ky-bg-elevated);
+        padding: 1.2rem 1.4rem;
+    }
+
+        .ky-sensor-cell .lbl {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.72rem;
+            color: var(--ky-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.5rem;
+        }
+
+        .ky-sensor-cell .val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.6rem;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+    .ky-uretim-card {
+        background: linear-gradient(135deg, rgba(61,214,140,0.1), rgba(61,214,140,0.02));
+        border: 1px solid rgba(61,214,140,0.25) !important;
+        overflow: hidden;
+    }
+
+    .ky-uretim-number {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 3.6rem;
+        line-height: 1;
+        color: var(--ky-success);
+        white-space: nowrap;
+    }
+
+    @@media (max-width: 992px) {
+        .ky-sensor-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 767px) {
+        .ky-detail-row, .ky-sensor-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .ky-uretim-number {
+            font-size: 2.6rem;
+        }
+    }
+</style>
+
+<div class="ky-hero d-flex justify-content-between align-items-start align-items-md-end flex-column flex-md-row">
+    <div>
+        <span class="ky-hero-eyebrow"><i class="fas fa-industry"></i> Makine detayı</span>
+        <h1>@Model.MakineAdi</h1>
+        <p>RS485 · Modbus TCP üzerinden gerçek zamanlı izleme</p>
+    </div>
+    <a href="@Url.Action("Index", "Home")" class="btn btn-outline-light" style="border-color: var(--ky-border-strong);">
+        <i class="fas fa-arrow-left me-2"></i> Panele Dön
+    </a>
+</div>
+
+<div class="ky-card mb-4">
+    <div class="ky-detail-row">
+        <div class="ky-detail-box">
+            <span class="lbl">Seri / Model No</span>
+            <span class="val">KCY-@Model.ID</span>
+        </div>
+        <div class="ky-detail-box">
+            <span class="lbl">Mevcut Durum</span>
+            <span class="val" id="val_durum">…</span>
+        </div>
+        <div class="ky-detail-box">
+            <span class="lbl">PLC Haberleşme</span>
+            <span class="val" style="color: var(--ky-info);">FP0R C32 (Modbus TCP)</span>
+        </div>
+    </div>
+
+    <div class="px-4 pt-4 pb-1">
+        <h5 class="fw-bold mb-0">Anlık Sensör Parametreleri</h5>
+    </div>
+
+    <div class="ky-sensor-grid mt-2">
+        <div class="ky-sensor-cell">
+            <span class="lbl"><i class="fas fa-gauge-high"></i> Hidrolik Basınç <span class="ky-tag ms-1">DT5004</span></span>
+            <span class="val" style="color: var(--ky-accent);" id="val_hid">–</span>
+        </div>
+        <div class="ky-sensor-cell">
+            <span class="lbl"><i class="fas fa-wind"></i> Ana Hava Basıncı <span class="ky-tag ms-1">DT5005</span></span>
+            <span class="val" style="color: var(--ky-accent);" id="val_hava">–</span>
+        </div>
+        <div class="ky-sensor-cell">
+            <span class="lbl"><i class="fas fa-compress-alt"></i> Ara Hava Basıncı <span class="ky-tag ms-1">DT206</span></span>
+            <span class="val" style="color: var(--ky-accent);" id="val_ara">–</span>
+        </div>
+        <div class="ky-sensor-cell">
+            <span class="lbl"><i class="fas fa-hashtag"></i> Makine Durumu <span class="ky-tag ms-1">DT5001</span></span>
+            <span class="val" style="color: var(--ky-info);" id="val_durumkodu">–</span>
+        </div>
+
+        <div class="ky-sensor-cell">
+            <span class="lbl"><i class="fas fa-temperature-three-quarters"></i> Tabla Sıcaklığı <span class="ky-tag ms-1">DT5006</span></span>
+            <span class="val" style="color: var(--ky-danger);" id="val_tabla">–</span>
+        </div>
+        <div class="ky-sensor-cell">
+            <span class="lbl"><i class="fas fa-temperature-three-quarters"></i> Yağ Sıcaklığı <span class="ky-tag ms-1">DT5007</span></span>
+            <span class="val" style="color: var(--ky-danger);" id="val_yag">–</span>
+        </div>
+        <div class="ky-sensor-cell">
+            <span class="lbl"><i class="fas fa-cogs"></i> Pompalar (Vakum/Yağ) <span class="ky-tag ms-1">Y60/Y61</span></span>
+            <span class="val" style="font-size: 1.1rem; color: var(--ky-success);" id="val_pompalar">–</span>
+        </div>
+        <div class="ky-sensor-cell">
+            <span class="lbl"><i class="fas fa-exclamation-triangle"></i> HMI Hata Kodu <span class="ky-tag ms-1">DT5011</span></span>
+            <span class="val" style="color: var(--ky-warning);" id="val_alarmKodu">–</span>
+        </div>
+    </div>
+</div>
+
+<div class="ky-card ky-uretim-card">
+    <div class="d-flex justify-content-between align-items-center p-4 flex-wrap gap-3">
+        <div>
+            <h3 class="fw-bold mb-1 d-flex align-items-center gap-2">
+                <i class="fas fa-box-open" style="color: var(--ky-success);"></i> Günlük Toplam Üretim
+            </h3>
+            <p class="mb-0" style="color: var(--ky-text-muted);">Bugün bu makineden çıkan net ürün sayısı (DT5008)</p>
+        </div>
+        <div class="text-end">
+            <span class="ky-uretim-number" id="val_uretim">0</span>
+            <div class="fw-bold mt-1" style="letter-spacing: 3px; font-size: 0.9rem; color: var(--ky-success);">ADET</div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function canliDetayCek() {
+            fetch('/Home/CanliVeriGetir')
+                .then(response => response.json())
+                .then(data => {
+                    if (data) {
+                        // PLC Fotoğraflarındaki DT5000 bloğu (Yeni Adresler)
+                        document.getElementById('val_hid').innerText = (data.hidrolikBasinc ?? "-") + " bar";
+                        document.getElementById('val_hava').innerText = (data.anaHavaBasinci ?? "-") + " bar";
+                        document.getElementById('val_ara').innerText = (data.araHavaBasinci ?? "-") + " bar";
+
+                        document.getElementById('val_tabla').innerText = (data.balonSicakligi ?? "-") + " °C";
+                        document.getElementById('val_yag').innerText = (data.presSicakligi ?? "-") + " °C";
+
+                        document.getElementById('val_durumkodu').innerText = data.dt5001_MakineDurumu ?? "-";
+                        document.getElementById('val_alarmKodu').innerText = data.dt5011_AktifAlarmKodu ? "K" + data.dt5011_AktifAlarmKodu : "Normal";
+                        document.getElementById('val_uretim').innerText = data.uretimAdedi ?? 0;
+
+                        // Pompalar (Y60, Y61)
+                        const vakum = data.y60_VakumPompasi ? "Vakum" : "";
+                        const yag = data.y61_YagSirkulasyonPompasi ? "Yağ" : "";
+                        const pompalar = [vakum, yag].filter(Boolean).join(" + ");
+                        document.getElementById('val_pompalar').innerText = pompalar ? pompalar + " (Aktif)" : "Beklemede";
+
+                        // Makine Durumu Rozeti
+                        var durumEl = document.getElementById('val_durum');
+                        if (data.r5_MakineCalisiyor || data.dt5001_MakineDurumu === 1) {
+                            durumEl.innerHTML = '<span style="color: var(--ky-success);"><i class="fas fa-circle-play me-1"></i> Üretimde</span>';
+                        } else {
+                            durumEl.innerHTML = '<span style="color: var(--ky-text-muted);"><i class="fas fa-pause-circle me-1"></i> Beklemede</span>';
+                        }
+                    }
+                })
+                .catch(error => console.error('Veri çekme hatası:', error));
+        }
+
+        canliDetayCek();
+        setInterval(canliDetayCek, 1000);
+    </script>
+}

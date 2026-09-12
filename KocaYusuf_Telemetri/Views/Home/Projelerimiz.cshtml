@@ -1,0 +1,61 @@
+﻿@{
+    ViewData["Title"] = "Projelerimiz";
+}
+
+<style>
+    body {
+        background-color: #12161f;
+        color: #e2e8f0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .scada-card {
+        background-color: #1a202c;
+        border: 1px solid #2d3748;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+    }
+</style>
+
+<div class="container mt-4 pb-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="p-4 scada-card">
+                <h1 class="h3 fw-bold text-warning mb-1">🚀 Devam Eden ve Tamamlanan Projeler</h1>
+                <p class="text-muted mb-0">KocaYusuf Makina Ar-Ge ve Otomasyon Projeleri</p>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="scada-card p-4 h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <h4 class="text-light">Membran Pres V1.0</h4>
+                    <p class="text-muted small mt-2">FP0R-C32MP PLC entegrasyonlu, Modbus RTU tabanlı gerçek zamanlı hidrolik ve sıcaklık takip sistemi.</p>
+                </div>
+                <div><span class="badge bg-success">Aktif Proje</span></div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="scada-card p-4 h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <h4 class="text-light">Endüstriyel IoT SCADA</h4>
+                    <p class="text-muted small mt-2">Fabrika genelindeki tüm preslerin anlık durum, basınç ve alarm takibini tek ekranda toplayan merkezi kontrol yazılımı.</p>
+                </div>
+                <div><span class="badge bg-primary">Geliştiriliyor</span></div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="scada-card p-4 h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <h4 class="text-light">Hidrolik Otomasyon Hattı</h4>
+                    <p class="text-muted small mt-2">Yüksek basınçlı presleme üniteleri için özel tasarlanmış emniyet, termik ve valf kontrol otomasyonu.</p>
+                </div>
+                <div><span class="badge bg-secondary">Tamamlandı</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="mt-2">
+        <a href="/Home/Index" class="btn btn-outline-info">⬅️ Ana Sayfaya Dön</a>
+    </div>
+</div>

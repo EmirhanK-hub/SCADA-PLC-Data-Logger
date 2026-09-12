@@ -1,0 +1,182 @@
+﻿@model KocaYusuf_Telemetri.Models.IletisimMesaji
+@{
+    ViewData["Title"] = "İletişim";
+}
+
+<style>
+    .ky-form-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--ky-text-muted);
+        margin-bottom: 0.4rem;
+        display: block;
+    }
+
+    .ky-form-control {
+        background: var(--ky-bg-elevated-2) !important;
+        border: 1px solid var(--ky-border) !important;
+        color: var(--ky-text) !important;
+        border-radius: var(--ky-radius-sm);
+        padding: 0.7rem 0.9rem;
+    }
+
+        .ky-form-control:focus {
+            border-color: var(--ky-accent) !important;
+            box-shadow: 0 0 0 3px var(--ky-accent-soft) !important;
+            background: var(--ky-bg-elevated-2) !important;
+            color: var(--ky-text) !important;
+        }
+
+        .ky-form-control::placeholder {
+            color: rgba(138,147,166,0.6);
+        }
+
+    .field-validation-error {
+        font-size: 0.78rem;
+        margin-top: 0.3rem;
+        display: block;
+    }
+
+    .ky-contact-info-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.9rem;
+        padding: 1.1rem 0;
+        border-bottom: 1px solid var(--ky-border);
+    }
+
+        .ky-contact-info-item:last-child {
+            border-bottom: none;
+        }
+
+    .ky-contact-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: var(--ky-accent-soft);
+        color: var(--ky-accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 0.95rem;
+    }
+</style>
+
+<div class="ky-hero">
+    <span class="ky-hero-eyebrow"><i class="fas fa-envelope"></i> Bize ulaşın</span>
+    <h1>İletişim</h1>
+    <p>Teknik destek, yedek parça veya genel sorularınız için bize ulaşabilirsiniz</p>
+</div>
+
+<div class="row g-4">
+    <!-- Kurumsal Bilgiler (Sol Taraf) -->
+    <div class="col-lg-5">
+        <div class="ky-card p-4 h-100">
+            <h5 class="fw-bold mb-2" style="font-family: 'JetBrains Mono', monospace; color: var(--ky-accent);">
+                <i class="fas fa-building me-2"></i>Merkez İletişim
+            </h5>
+            <p class="text-muted small mb-4">Aşağıdaki kanallardan doğrudan bize ulaşabilir, ya da yandaki formu doldurabilirsiniz.</p>
+
+            <div class="ky-contact-info-item">
+                <span class="ky-contact-icon"><i class="fas fa-location-dot"></i></span>
+                <div>
+                    <div class="fw-bold" style="font-size: 0.92rem;">Fabrika Adresi</div>
+                    <div class="text-muted small">Yukarı Dudullu OSB 1. Cad. No: 30-34<br>34775 Ümraniye / İstanbul</div>
+                </div>
+            </div>
+
+            <div class="ky-contact-info-item">
+                <span class="ky-contact-icon"><i class="fas fa-phone"></i></span>
+                <div>
+                    <div class="fw-bold" style="font-size: 0.92rem;">Telefon</div>
+                    <div class="text-muted small">+90 (216) 466 80 21</div>
+                </div>
+            </div>
+
+            <div class="ky-contact-info-item">
+                <span class="ky-contact-icon"><i class="fas fa-envelope"></i></span>
+                <div>
+                    <div class="fw-bold" style="font-size: 0.92rem;">E-posta</div>
+                    <div class="text-muted small">info@kocayusufmakine.com</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- İletişim Formu (Sağ Taraf) -->
+    <div class="col-lg-7">
+        <div class="ky-card p-4 h-100">
+            <h5 class="fw-bold mb-3" style="font-family: 'JetBrains Mono', monospace;">Hızlı Mesaj Gönder</h5>
+
+            @if (TempData["MesajBasarili"] != null)
+            {
+                <div class="alert mb-3" style="background: var(--ky-success-soft); border: 1px solid rgba(61,214,140,0.3); color: var(--ky-success); border-radius: var(--ky-radius-sm);">
+                    <i class="fas fa-circle-check me-2"></i>@TempData["MesajBasarili"]
+                </div>
+            }
+            @if (TempData["MesajHata"] != null)
+            {
+                <div class="alert mb-3" style="background: var(--ky-danger-soft); border: 1px solid rgba(255,92,92,0.3); color: var(--ky-danger); border-radius: var(--ky-radius-sm);">
+                    <i class="fas fa-triangle-exclamation me-2"></i>@TempData["MesajHata"]
+                </div>
+            }
+
+            <form asp-action="IletisimGonder" asp-controller="Home" method="post">
+                <div class="mb-3">
+                    <label asp-for="AdSoyad" class="ky-form-label">Adınız Soyadınız</label>
+                    <input asp-for="AdSoyad" class="form-control ky-form-control" placeholder="Örn: Ali Yılmaz" />
+                    <span asp-validation-for="AdSoyad" class="text-danger field-validation-error"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Telefon" class="ky-form-label">Telefon Numaranız</label>
+                    <input asp-for="Telefon" class="form-control ky-form-control" placeholder="Örn: 0555 123 4567" />
+                    <span asp-validation-for="Telefon" class="text-danger field-validation-error"></span>
+                </div>
+                <div class="mb-4">
+                    <label asp-for="Mesaj" class="ky-form-label">Mesajınız</label>
+                    <textarea asp-for="Mesaj" class="form-control ky-form-control" rows="4" placeholder="Teknik servis talebinizi veya mesajınızı yazın..."></textarea>
+                    <span asp-validation-for="Mesaj" class="text-danger field-validation-error"></span>
+                </div>
+                <button type="submit" class="btn btn-warning fw-bold w-100 py-2 text-dark">
+                    <i class="fas fa-paper-plane me-2"></i> Gönder
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

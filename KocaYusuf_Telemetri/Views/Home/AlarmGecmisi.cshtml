@@ -1,0 +1,187 @@
+﻿@{
+    ViewData["Title"] = "Alarm Geçmişi";
+}
+
+<style>
+    .ky-filter-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        gap: 1rem;
+        padding: 1.2rem 1.4rem;
+    }
+
+        .ky-filter-bar label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--ky-text-muted);
+            margin-bottom: 0.3rem;
+            display: block;
+        }
+
+        .ky-filter-bar input.form-control {
+            background: var(--ky-bg-elevated-2);
+            border: 1px solid var(--ky-border);
+            color: var(--ky-text);
+        }
+
+            .ky-filter-bar input.form-control:focus {
+                background: var(--ky-bg-elevated-2);
+                color: var(--ky-text);
+                border-color: var(--ky-accent);
+                box-shadow: 0 0 0 3px var(--ky-accent-soft);
+            }
+
+    .ky-alarm-table {
+        color: var(--ky-text);
+        margin-bottom: 0;
+        font-size: 0.88rem;
+    }
+
+        .ky-alarm-table th {
+            background: var(--ky-bg-elevated-2);
+            border-bottom: 2px solid var(--ky-border);
+            white-space: nowrap;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--ky-text-muted);
+            font-weight: 600;
+            padding: 0.8rem 1.2rem;
+        }
+
+        .ky-alarm-table td {
+            border-bottom: 1px solid var(--ky-border);
+            padding: 0.75rem 1.2rem;
+        }
+
+    .ky-alarm-row {
+        background: rgba(255,92,92,0.04);
+    }
+
+    .ky-alarm-code {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--ky-danger);
+        background: var(--ky-danger-soft);
+        border: 1px solid rgba(255,92,92,0.25);
+        padding: 0.2rem 0.55rem;
+        border-radius: 6px;
+    }
+</style>
+
+<div class="ky-hero">
+    <span class="ky-hero-eyebrow"><i class="fas fa-triangle-exclamation"></i> Güvenlik &amp; arıza kayıtları</span>
+    <h1>Alarm / Hata Geçmişi</h1>
+    <p>Makine üzerinde tetiklenen hata ve alarm olaylarının kronolojik listesi</p>
+</div>
+
+<div class="ky-card mb-4">
+    <div class="ky-filter-bar">
+        <div>
+            <label>Başlangıç Tarihi</label>
+            <input type="date" id="baslangicTarihi" class="form-control" />
+        </div>
+        <div>
+            <label>Bitiş Tarihi</label>
+            <input type="date" id="bitisTarihi" class="form-control" />
+        </div>
+        <div>
+            <button id="sorgulaBtn" class="btn btn-warning fw-bold text-dark">
+                <i class="fas fa-magnifying-glass me-2"></i> Sorgula
+            </button>
+        </div>
+        <div class="ms-auto">
+            <span id="sonucSayisi" class="text-muted small"></span>
+        </div>
+    </div>
+</div>
+
+<div class="ky-card">
+    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+        <table class="table ky-alarm-table mb-0">
+            <thead style="position: sticky; top: 0; z-index: 1;">
+                <tr>
+                    <th>Zaman</th>
+                    <th>Kod</th>
+                    <th>Hata Türü</th>
+                    <th>Detay</th>
+                </tr>
+            </thead>
+            <tbody id="alarmTablosuGovde">
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">
+                        Bir tarih aralığı seçip "Sorgula" butonuna basın
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function varsayilanTarihleriDoldur() {
+            const bugun = new Date();
+            const yediGunOnce = new Date();
+            yediGunOnce.setDate(bugun.getDate() - 7);
+
+            document.getElementById('baslangicTarihi').value = yediGunOnce.toISOString().split('T')[0];
+            document.getElementById('bitisTarihi').value = bugun.toISOString().split('T')[0];
+        })();
+
+        function tarihFormatla(isoString) {
+            if (!isoString) return "-";
+            const d = new Date(isoString);
+            return d.toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        function sorgula() {
+            const baslangic = document.getElementById('baslangicTarihi').value;
+            const bitis = document.getElementById('bitisTarihi').value;
+
+            if (!baslangic || !bitis) {
+                alert('Lütfen başlangıç ve bitiş tarihi seçin.');
+                return;
+            }
+
+            document.getElementById('sonucSayisi').innerText = 'Yükleniyor...';
+
+            fetch(`/Home/AlarmGecmisiGetir?baslangic=${baslangic}&bitis=${bitis}`)
+                .then(response => response.json())
+                .then(olaylar => {
+                    document.getElementById('sonucSayisi').innerText = `${olaylar.length} alarm olayı bulundu`;
+                    tabloyuDoldur(olaylar);
+                })
+                .catch(error => {
+                    console.error('Alarm geçmişi çekme hatası:', error);
+                    document.getElementById('sonucSayisi').innerText = 'Hata oluştu';
+                });
+        }
+
+        function tabloyuDoldur(olaylar) {
+            const govde = document.getElementById('alarmTablosuGovde');
+
+            if (!olaylar || olaylar.length === 0) {
+                govde.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Bu tarih aralığında alarm/hata kaydı bulunamadı ✅</td></tr>';
+                return;
+            }
+
+            let html = '';
+            for (const o of olaylar) {
+                html += `<tr class="ky-alarm-row">
+                    <td class="ky-mono">${tarihFormatla(o.zaman)}</td>
+                    <td><span class="ky-alarm-code">${o.kod}</span></td>
+                    <td>${o.tur}</td>
+                    <td class="text-muted">${o.detay || '–'}</td>
+                </tr>`;
+            }
+            govde.innerHTML = html;
+        }
+
+        document.getElementById('sorgulaBtn').addEventListener('click', sorgula);
+        sorgula();
+    </script>
+}

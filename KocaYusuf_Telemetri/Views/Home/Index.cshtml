@@ -1,0 +1,335 @@
+﻿@model IEnumerable<KocaYusuf_Telemetri.Models.Makine>
+
+@{
+    ViewData["Title"] = "Canlı Panel";
+}
+
+<style>
+    .ky-hero {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .ky-hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ky-accent);
+    }
+
+    .ky-hero h1 {
+        font-size: clamp(1.5rem, 3vw, 2.1rem);
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .ky-hero p {
+        color: var(--ky-text-muted);
+        margin: 0;
+        font-size: 0.92rem;
+    }
+
+    .ky-actions {
+        display: flex;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+    }
+
+    .ky-machine-card {
+        overflow: hidden;
+    }
+
+    .ky-machine-header {
+        background: linear-gradient(120deg, rgba(91,141,239,0.14), rgba(91,141,239,0.02));
+        border-bottom: 1px solid var(--ky-border);
+        padding: 1.1rem 1.4rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+    }
+
+        .ky-machine-header h4 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .ky-machine-header .ky-tag {
+            margin-top: 0.3rem;
+        }
+
+    .ky-metric-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1px;
+        background: var(--ky-border);
+    }
+
+    .ky-metric {
+        background: var(--ky-bg-elevated);
+        padding: 1.1rem 1.4rem;
+    }
+
+    .ky-metric-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.72rem;
+        color: var(--ky-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.4rem;
+    }
+
+    .ky-metric-value {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 1.55rem;
+        font-weight: 600;
+        line-height: 1;
+    }
+
+    .ky-metric-unit {
+        font-size: 0.85rem;
+        color: var(--ky-text-muted);
+        font-weight: 500;
+        margin-left: 0.25rem;
+    }
+
+    .ky-status-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        background: var(--ky-border);
+        border-top: 1px solid var(--ky-border);
+    }
+
+    .ky-status-box {
+        background: var(--ky-bg-elevated-2);
+        padding: 0.9rem 1.4rem;
+        text-align: center;
+    }
+
+        .ky-status-box .lbl {
+            font-size: 0.68rem;
+            color: var(--ky-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .ky-status-box .val {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+    .ky-footer-strip {
+        padding: 0.7rem 1.4rem;
+        border-top: 1px solid var(--ky-border);
+        color: var(--ky-text-muted);
+        font-size: 0.78rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .ky-alarm-banner {
+        background: var(--ky-danger-soft);
+        border: 1px solid rgba(255,92,92,0.3);
+        color: var(--ky-danger);
+        border-radius: var(--ky-radius-sm);
+        padding: 0.65rem 1rem;
+        margin: 1rem 1.4rem 0;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    @@media (max-width: 767px) {
+        .ky-metric-grid, .ky-status-row {
+            grid-template-columns: 1fr;
+        }
+
+        .ky-machine-header, .ky-metric, .ky-status-box, .ky-footer-strip, .ky-alarm-banner {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
+</style>
+
+<div class="ky-hero d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end">
+    <div>
+        <span class="ky-hero-eyebrow"><i class="fas fa-satellite-dish"></i> Gerçek zamanlı telemetri</span>
+        <h1>Canlı İzleme Paneli</h1>
+        <p>Fabrika hattındaki makinelerin anlık sensör verileri ve üretim durumu</p>
+    </div>
+    <div class="ky-actions">
+        <a href="@Url.Action("ExportToExcel", "Home")" class="btn btn-success fw-bold">
+            <i class="fas fa-file-excel me-2"></i> Excel'e Aktar
+        </a>
+        <form asp-action="ManuelYedekAl" asp-controller="Home" method="post" class="d-inline">
+            <button type="submit" class="btn btn-outline-light fw-bold" style="border-color: var(--ky-border-strong);">
+                <i class="fas fa-database me-2"></i> Yedek Al
+            </button>
+        </form>
+        <form asp-action="VerileriSifirla" asp-controller="Home" method="post" class="d-inline" onsubmit="return confirm('Tüm geçmiş telemetri kayıtları kalıcı olarak silinecek. Önce yedek aldığından emin misin? Bu işlem geri alınamaz.');">
+            <button type="submit" class="btn fw-bold" style="background: var(--ky-danger-soft); color: var(--ky-danger); border: 1px solid rgba(255,92,92,0.3);">
+                <i class="fas fa-trash-can me-2"></i> Verileri Sıfırla
+            </button>
+        </form>
+    </div>
+</div>
+
+@if (TempData["YedekMesaji"] != null)
+{
+    <div class="alert alert-info shadow-sm mb-4" style="background: var(--ky-info-soft); border: 1px solid rgba(91,141,239,0.3); color: var(--ky-info);">
+        <i class="fas fa-circle-info me-2"></i>@TempData["YedekMesaji"]
+    </div>
+}
+
+<div class="row justify-content-center g-4">
+    @foreach (var makine in Model)
+    {
+        var sonVeri = makine.Veriler?.OrderByDescending(v => v.KayitZamani).FirstOrDefault();
+        var aktifAlarm = makine.Alarmlar?.FirstOrDefault(a => a.AktifMi);
+
+        <div class="col-xl-7 col-lg-9 col-12">
+            <div class="ky-card ky-machine-card">
+                <div class="ky-machine-header" onclick="location.href='@Url.Action("Detay", "Home", new { id = makine.ID })'">
+                    <div>
+                        <h4>@makine.MakineAdi</h4>
+                        <span class="ky-tag">RS485 · Modbus RTU</span>
+                    </div>
+                    <span class="btn btn-sm" style="background: rgba(255,255,255,0.06); color: var(--ky-text);">
+                        Detaylar <i class="fas fa-arrow-right ms-1"></i>
+                    </span>
+                </div>
+
+                @if (aktifAlarm != null)
+                {
+                    <div class="ky-alarm-banner">
+                        <i class="fas fa-triangle-exclamation me-2"></i>@aktifAlarm.AlarmMesaji
+                    </div>
+                }
+
+                <div class="ky-metric-grid">
+                    <div class="ky-metric">
+                        <span class="ky-metric-label"><i class="fas fa-gauge-high"></i> Hidrolik Basınç <span class="ky-tag ms-1">DT2</span></span>
+                        <span class="ky-metric-value" style="color: var(--ky-accent);">@(sonVeri?.HidrolikBasinc != null ? sonVeri.HidrolikBasinc.Value.ToString("0.0") : "–")<span class="ky-metric-unit">bar</span></span>
+                    </div>
+                    <div class="ky-metric">
+                        <span class="ky-metric-label"><i class="fas fa-wind"></i> Ana Hava Basıncı <span class="ky-tag ms-1">DT4</span></span>
+                        <span class="ky-metric-value" style="color: var(--ky-accent);">@(sonVeri?.AnaHavaBasinci != null ? sonVeri.AnaHavaBasinci.Value.ToString("0.0") : "–")<span class="ky-metric-unit">bar</span></span>
+                    </div>
+                    <div class="ky-metric">
+                        <span class="ky-metric-label"><i class="fas fa-temperature-three-quarters"></i> Balon Sıcaklığı <span class="ky-tag ms-1">DT126</span></span>
+                        <span class="ky-metric-value" style="color: var(--ky-danger);">@(sonVeri?.BalonSicakligi != null ? sonVeri.BalonSicakligi.Value.ToString("0.0") : "–")<span class="ky-metric-unit">°C</span></span>
+                    </div>
+                    <div class="ky-metric">
+                        <span class="ky-metric-label"><i class="fas fa-temperature-three-quarters"></i> Pres Sıcaklığı <span class="ky-tag ms-1">DT82</span></span>
+                        <span class="ky-metric-value" style="color: var(--ky-danger);">@(sonVeri?.PresSicakligi != null ? sonVeri.PresSicakligi.Value.ToString("0.0") : "–")<span class="ky-metric-unit">°C</span></span>
+                    </div>
+                </div>
+
+                <div class="ky-status-row">
+                    <div class="ky-status-box">
+                        <span class="lbl">Makine Durumu</span>
+                        <span class="val text-secondary" id="ky-makine-durumu">–</span>
+                    </div>
+                    <div class="ky-status-box">
+                        <span class="lbl">Çalışma Modu</span>
+                        <span class="val text-secondary" id="ky-calisma-modu">–</span>
+                    </div>
+                </div>
+
+                <div class="ky-status-row" style="border-top: none;">
+                    <div class="ky-status-box">
+                        <span class="lbl">Günlük Üretim <span class="ky-tag ms-1">R36</span></span>
+                        <span class="val" style="color: var(--ky-success);" id="ky-gunluk-uretim">–</span>
+                    </div>
+                    <div class="ky-status-box">
+                        <span class="lbl">Acil Stop <span class="ky-tag ms-1">X4</span></span>
+                        <span class="val text-secondary" id="ky-acil-stop">–</span>
+                    </div>
+                </div>
+
+                <div class="ky-footer-strip">
+                    <span><i class="fas fa-clock me-1"></i> Son okuma</span>
+                    <span class="ky-mono" id="ky-son-okuma">@(sonVeri != null && sonVeri.KayitZamani != null ? sonVeri.KayitZamani.Value.ToString("HH:mm:ss") : "–")</span>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function anaSayfaVeriCek() {
+            fetch('/Home/CanliVeriGetir')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data) return;
+
+                    var durumEl = document.getElementById('ky-makine-durumu');
+                    if (durumEl) {
+                        if (data.r5_MakineCalisiyor) {
+                            durumEl.innerHTML = '<i class="fas fa-circle-play me-1"></i> Çalışıyor';
+                            durumEl.style.color = 'var(--ky-success)';
+                        } else {
+                            durumEl.innerHTML = '<i class="fas fa-pause-circle me-1"></i> Beklemede';
+                            durumEl.style.color = 'var(--ky-text-muted)';
+                        }
+                    }
+
+                    var moduEl = document.getElementById('ky-calisma-modu');
+                    if (moduEl) {
+                        if (data.r301_OtomatikMod) {
+                            moduEl.innerHTML = '<i class="fas fa-gears me-1"></i> Otomatik';
+                            moduEl.style.color = 'var(--ky-info)';
+                        } else if (data.r300_ManuelMod) {
+                            moduEl.innerHTML = '<i class="fas fa-hand me-1"></i> Manuel';
+                            moduEl.style.color = 'var(--ky-accent)';
+                        } else {
+                            moduEl.innerHTML = '–';
+                            moduEl.style.color = 'var(--ky-text-muted)';
+                        }
+                    }
+
+                    var acilEl = document.getElementById('ky-acil-stop');
+                    if (acilEl) {
+                        if (data.x4_AcilStop) {
+                            acilEl.innerHTML = '<i class="fas fa-triangle-exclamation me-1"></i> AKTİF';
+                            acilEl.style.color = 'var(--ky-danger)';
+                        } else {
+                            acilEl.innerHTML = '<i class="fas fa-check-circle me-1"></i> Normal';
+                            acilEl.style.color = 'var(--ky-success)';
+                        }
+                    }
+
+                    var sonOkumaEl = document.getElementById('ky-son-okuma');
+                    if (sonOkumaEl && data.kayitZamani) {
+                        var d = new Date(data.kayitZamani);
+                        sonOkumaEl.innerText = d.toLocaleTimeString('tr-TR');
+                    }
+                })
+                .catch(error => console.error('Ana sayfa veri çekme hatası:', error));
+
+            fetch('/Home/GunlukUretimGetir')
+                .then(response => response.json())
+                .then(data => {
+                    var el = document.getElementById('ky-gunluk-uretim');
+                    if (el) el.innerText = data.gunlukUretim + ' adet';
+                })
+                .catch(error => console.error('Günlük üretim çekme hatası:', error));
+        }
+
+        anaSayfaVeriCek();
+        setInterval(anaSayfaVeriCek, 1000);
+    </script>
+}

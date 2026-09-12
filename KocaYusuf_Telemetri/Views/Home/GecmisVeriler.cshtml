@@ -1,0 +1,420 @@
+﻿@{
+    ViewData["Title"] = "Geçmiş Veriler";
+}
+
+<style>
+    .ky-filter-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        gap: 1rem;
+        padding: 1.2rem 1.4rem;
+    }
+
+        .ky-filter-bar label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--ky-text-muted);
+            margin-bottom: 0.3rem;
+            display: block;
+        }
+
+        .ky-filter-bar input.form-control {
+            background: var(--ky-bg-elevated-2);
+            border: 1px solid var(--ky-border);
+            color: var(--ky-text);
+        }
+
+            .ky-filter-bar input.form-control:focus {
+                background: var(--ky-bg-elevated-2);
+                color: var(--ky-text);
+                border-color: var(--ky-accent);
+                box-shadow: 0 0 0 3px var(--ky-accent-soft);
+            }
+
+    .ky-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 1px;
+        background: var(--ky-border);
+    }
+
+    .ky-stat-cell {
+        background: var(--ky-bg-elevated);
+        padding: 1.1rem 1.3rem;
+    }
+
+        .ky-stat-cell .lbl {
+            font-size: 0.7rem;
+            color: var(--ky-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.4rem;
+            display: block;
+        }
+
+        .ky-stat-cell .val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.4rem;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+    .ky-chart-wrap {
+        padding: 1.2rem 1.4rem;
+    }
+
+    .ky-history-table {
+        color: var(--ky-text);
+        margin-bottom: 0;
+        font-size: 0.85rem;
+    }
+
+        .ky-history-table th {
+            background: var(--ky-bg-elevated-2);
+            border-bottom: 2px solid var(--ky-border);
+            white-space: nowrap;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--ky-text-muted);
+            font-weight: 600;
+            padding: 0.7rem 1rem;
+        }
+
+        .ky-history-table td {
+            border-bottom: 1px solid var(--ky-border);
+            white-space: nowrap;
+            padding: 0.6rem 1rem;
+        }
+
+        .ky-history-table tbody tr:hover td {
+            background: rgba(255,255,255,0.02);
+        }
+
+    .ky-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.2rem 0.6rem;
+        border-radius: 999px;
+    }
+
+        .ky-status-badge.run {
+            background: var(--ky-success-soft);
+            color: var(--ky-success);
+        }
+
+        .ky-status-badge.idle {
+            background: rgba(255,255,255,0.05);
+            color: var(--ky-text-muted);
+        }
+
+        .ky-status-badge.err {
+            background: var(--ky-danger-soft);
+            color: var(--ky-danger);
+        }
+
+        .ky-status-badge.info {
+            background: rgba(13, 110, 253, 0.15);
+            color: #0d6efd;
+        }
+
+    @@media (max-width: 991px) {
+        .ky-stat-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+
+<div class="ky-hero">
+    <span class="ky-hero-eyebrow"><i class="fas fa-clock-rotate-left"></i> Geçmiş kayıtlar</span>
+    <h1>Geçmiş Veriler</h1>
+    <p>Seçilen tarih aralığındaki telemetri kayıtları, özet, tablo ve grafik olarak</p>
+</div>
+
+<div class="ky-card mb-4">
+    <div class="ky-filter-bar">
+        <div>
+            <label>Başlangıç Tarihi</label>
+            <input type="date" id="baslangicTarihi" class="form-control" />
+        </div>
+        <div>
+            <label>Bitiş Tarihi</label>
+            <input type="date" id="bitisTarihi" class="form-control" />
+        </div>
+        <div>
+            <button id="sorgulaBtn" class="btn btn-warning fw-bold text-dark">
+                <i class="fas fa-magnifying-glass me-2"></i> Sorgula
+            </button>
+        </div>
+        <div class="ms-auto">
+            <span id="sonucSayisi" class="text-muted small"></span>
+        </div>
+    </div>
+</div>
+
+<!-- ÖZET İSTATİSTİKLER -->
+<div class="ky-card mb-4">
+    <div class="ky-stat-grid">
+        <div class="ky-stat-cell">
+            <span class="lbl"><i class="fas fa-database me-1"></i> Toplam Kayıt</span>
+            <span class="val" id="stat_kayit">–</span>
+        </div>
+        <div class="ky-stat-cell">
+            <span class="lbl" style="color: var(--ky-accent);"><i class="fas fa-gauge-high me-1"></i> Ort. Hidrolik Basınç</span>
+            <span class="val" style="color: var(--ky-accent);" id="stat_ortbasinc">–</span>
+        </div>
+        <div class="ky-stat-cell">
+            <span class="lbl" style="color: var(--ky-accent);"><i class="fas fa-arrow-up me-1"></i> Maks. Hidrolik Basınç</span>
+            <span class="val" style="color: var(--ky-accent);" id="stat_maxbasinc">–</span>
+        </div>
+        <div class="ky-stat-cell">
+            <span class="lbl" style="color: var(--ky-success);"><i class="fas fa-circle-play me-1"></i> Çalışma Oranı</span>
+            <span class="val" style="color: var(--ky-success);" id="stat_calisma">–</span>
+        </div>
+        <div class="ky-stat-cell">
+            <span class="lbl" style="color: var(--ky-danger);"><i class="fas fa-triangle-exclamation me-1"></i> Hata Kaydı</span>
+            <span class="val" style="color: var(--ky-danger);" id="stat_hata">–</span>
+        </div>
+    </div>
+</div>
+
+<div class="ky-card mb-4">
+    <div class="ky-chart-wrap">
+        <canvas id="veriGrafigi" height="80"></canvas>
+    </div>
+</div>
+
+<div class="ky-card">
+    <div class="table-responsive" style="max-height: 520px; overflow-y: auto;">
+        <table class="table ky-history-table mb-0">
+            <thead style="position: sticky; top: 0; z-index: 1;">
+                <tr>
+                    <th>Zaman</th>
+                    <th>Hidrolik Basınç</th>
+                    <th>Hava Basıncı</th>
+                    <!-- YENİ PLC HARİTASINA GÖRE İSİMLER DEĞİŞTİ -->
+                    <th>Tabla Sıcaklığı</th>
+                    <th>Yağ Sıcaklığı</th>
+                    <th>Çalışma Modu</th>
+                    <th>Makine Durumu</th>
+                    <th>Çevrim Tamamlandı</th>
+                    <th>Genel Hata / Alarm</th>
+                </tr>
+            </thead>
+            <tbody id="veriTablosuGovde">
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">
+                        Bir tarih aralığı seçip "Sorgula" butonuna basın
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="d-flex justify-content-between align-items-center px-3 py-2" style="border-top: 1px solid var(--ky-border);">
+        <button id="oncekiSayfaBtn" class="btn btn-sm btn-outline-light" style="border-color: var(--ky-border-strong);">
+            <i class="fas fa-chevron-left me-1"></i> Önceki
+        </button>
+        <span id="sayfaBilgisi" class="text-muted small"></span>
+        <button id="sonrakiSayfaBtn" class="btn btn-sm btn-outline-light" style="border-color: var(--ky-border-strong);">
+            Sonraki <i class="fas fa-chevron-right ms-1"></i>
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <script>
+        let grafik = null;
+        let tumVeriler = [];
+        let mevcutSayfa = 1;
+        const SAYFA_BOYUTU = 50;
+
+        (function varsayilanTarihleriDoldur() {
+            const bugun = new Date().toISOString().split('T')[0];
+            document.getElementById('baslangicTarihi').value = bugun;
+            document.getElementById('bitisTarihi').value = bugun;
+        })();
+
+        function tarihFormatla(isoString) {
+            if (!isoString) return "-";
+            const d = new Date(isoString);
+            return d.toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        function sorgula() {
+            const baslangic = document.getElementById('baslangicTarihi').value;
+            const bitis = document.getElementById('bitisTarihi').value;
+
+            if (!baslangic || !bitis) {
+                alert('Lütfen başlangıç ve bitiş tarihi seçin.');
+                return;
+            }
+
+            document.getElementById('sonucSayisi').innerText = 'Yükleniyor...';
+
+            fetch(`/Home/GecmisVeriGetir?baslangic=${baslangic}&bitis=${bitis}`)
+                .then(response => response.json())
+                .then(veriler => {
+                    document.getElementById('sonucSayisi').innerText = `${veriler.length} kayıt bulundu`;
+                    tumVeriler = veriler;
+                    mevcutSayfa = 1;
+                    tabloyuDoldur();
+                    grafigiCiz(veriler);
+                    istatistikleriHesapla(veriler);
+                })
+                .catch(error => {
+                    console.error('Geçmiş veri çekme hatası:', error);
+                    document.getElementById('sonucSayisi').innerText = 'Hata oluştu';
+                });
+        }
+
+        function istatistikleriHesapla(veriler) {
+            document.getElementById('stat_kayit').innerText = veriler.length.toLocaleString('tr-TR');
+
+            const basinclar = veriler.map(v => v.hidrolikBasinc).filter(v => v !== null && v !== undefined);
+            if (basinclar.length > 0) {
+                const ort = basinclar.reduce((a, b) => a + b, 0) / basinclar.length;
+                const maks = Math.max(...basinclar);
+                document.getElementById('stat_ortbasinc').innerText = ort.toFixed(2) + ' bar';
+                document.getElementById('stat_maxbasinc').innerText = maks.toFixed(2) + ' bar';
+            } else {
+                document.getElementById('stat_ortbasinc').innerText = '–';
+                document.getElementById('stat_maxbasinc').innerText = '–';
+            }
+
+            const calisanSayisi = veriler.filter(v => v.r5_MakineCalisiyor === true || v.dt5001_MakineDurumu === 1).length;
+            const oran = veriler.length > 0 ? (calisanSayisi / veriler.length * 100) : 0;
+            document.getElementById('stat_calisma').innerText = oran.toFixed(1) + ' %';
+
+            // Hata kaydı istatistiğini yeni alarm yapısına göre de genişlettik
+            const hataSayisi = veriler.filter(v => v.r32_GenelHata === true || v.dt5011_AktifAlarmKodu > 0).length;
+            document.getElementById('stat_hata').innerText = hataSayisi.toLocaleString('tr-TR');
+        }
+
+        function tabloyuDoldur() {
+            const govde = document.getElementById('veriTablosuGovde');
+
+            if (!tumVeriler || tumVeriler.length === 0) {
+                govde.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">Bu tarih aralığında veri bulunamadı</td></tr>';
+                document.getElementById('sayfaBilgisi').innerText = '';
+                return;
+            }
+
+            const toplamSayfa = Math.max(1, Math.ceil(tumVeriler.length / SAYFA_BOYUTU));
+            if (mevcutSayfa > toplamSayfa) mevcutSayfa = toplamSayfa;
+
+            const tersSirali = [...tumVeriler].reverse();
+            const baslangicIdx = (mevcutSayfa - 1) * SAYFA_BOYUTU;
+            const sayfaVerisi = tersSirali.slice(baslangicIdx, baslangicIdx + SAYFA_BOYUTU);
+
+            let html = '';
+            for (const v of sayfaVerisi) {
+
+                // YENİ PLC EKLENTİSİ: Makine Çalışma Durumu Rozeti
+                const durumBadge = (v.r5_MakineCalisiyor || v.dt5001_MakineDurumu === 1)
+                    ? '<span class="ky-status-badge run"><i class="fas fa-circle-play"></i> Çalışıyor</span>'
+                    : '<span class="ky-status-badge idle"><i class="fas fa-pause-circle"></i> Beklemede</span>';
+
+                // YENİ PLC EKLENTİSİ: Manuel / Otomatik Rozeti
+                const modBadge = (v.r301_OtomatikMod === true || v.dt5002_ManuelOtomatik === 1)
+                    ? '<span class="ky-status-badge info"><i class="fas fa-robot"></i> Otomatik</span>'
+                    : '<span class="ky-status-badge idle"><i class="fas fa-hand"></i> Manuel</span>';
+
+                // YENİ PLC EKLENTİSİ: Alarm ve Hata Gösterimi
+                let hataIcerik = '<span class="text-muted">Normal</span>';
+                if (v.r32_GenelHata || v.dt5011_AktifAlarmKodu > 0) {
+                    let kodEki = v.dt5011_AktifAlarmKodu ? ` (K${v.dt5011_AktifAlarmKodu})` : '';
+                    hataIcerik = `<span class="ky-status-badge err"><i class="fas fa-triangle-exclamation"></i> HATA${kodEki}</span>`;
+                }
+
+                html += `<tr>
+                    <td class="ky-mono">${tarihFormatla(v.kayitZamani)}</td>
+                    <td>${v.hidrolikBasinc ?? '-'}</td>
+                    <td>${v.anaHavaBasinci ?? '-'}</td>
+
+                    <!-- DİKKAT: JSON'dan C# Property adı olan balon/pres geliyor ama ekranda PLC tablosundaki Tabla/Yağ Sıcaklığı olarak gösteriyoruz -->
+                    <td>${v.balonSicakligi ?? '-'}</td>
+                    <td>${v.presSicakligi ?? '-'}</td>
+
+                    <td>${modBadge}</td>
+                    <td>${durumBadge}</td>
+                    <td>${v.r36_CevrimTamamlandi ? '✅' : '-'}</td>
+                    <td>${hataIcerik}</td>
+                </tr>`;
+            }
+            govde.innerHTML = html;
+
+            document.getElementById('sayfaBilgisi').innerText = `Sayfa ${mevcutSayfa} / ${toplamSayfa}`;
+            document.getElementById('oncekiSayfaBtn').disabled = mevcutSayfa <= 1;
+            document.getElementById('sonrakiSayfaBtn').disabled = mevcutSayfa >= toplamSayfa;
+        }
+
+        function grafigiCiz(veriler) {
+            const ctx = document.getElementById('veriGrafigi').getContext('2d');
+
+            const adim = Math.max(1, Math.floor(veriler.length / 300));
+            const ornekVeri = veriler.filter((_, i) => i % adim === 0);
+
+            const etiketler = ornekVeri.map(v => tarihFormatla(v.kayitZamani));
+            const hidrolik = ornekVeri.map(v => v.hidrolikBasinc);
+            // Grafikte de PLC'deki yeni isme (Tabla) uyarlandı
+            const tabla = ornekVeri.map(v => v.balonSicakligi);
+
+            if (grafik) grafik.destroy();
+
+            grafik = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: etiketler,
+                    datasets: [
+                        {
+                            label: 'Hidrolik Basınç (bar)',
+                            data: hidrolik,
+                            borderColor: '#F5A623',
+                            backgroundColor: 'rgba(245,166,35,0.08)',
+                            fill: true,
+                            tension: 0.25,
+                            pointRadius: 0,
+                            borderWidth: 2,
+                        },
+                        {
+                            label: 'Tabla Sıcaklığı (°C)', // ETİKET DEĞİŞTİRİLDİ
+                            data: tabla,
+                            borderColor: '#FF5C5C',
+                            backgroundColor: 'transparent',
+                            tension: 0.25,
+                            pointRadius: 0,
+                            borderWidth: 2,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: { ticks: { color: '#8A93A6', maxTicksLimit: 10, font: { family: 'JetBrains Mono' } }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { ticks: { color: '#8A93A6' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#E7EAF0', font: { family: 'Inter' } } }
+                    }
+                }
+            });
+        }
+
+        document.getElementById('sorgulaBtn').addEventListener('click', sorgula);
+        document.getElementById('oncekiSayfaBtn').addEventListener('click', () => {
+            if (mevcutSayfa > 1) { mevcutSayfa--; tabloyuDoldur(); }
+        });
+        document.getElementById('sonrakiSayfaBtn').addEventListener('click', () => {
+            const toplamSayfa = Math.max(1, Math.ceil(tumVeriler.length / SAYFA_BOYUTU));
+            if (mevcutSayfa < toplamSayfa) { mevcutSayfa++; tabloyuDoldur(); }
+        });
+        sorgula();
+    </script>
+}

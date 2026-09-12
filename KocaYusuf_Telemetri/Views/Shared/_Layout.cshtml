@@ -1,0 +1,288 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - KocaYusuf Makina</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/KocaYusuf_Telemetri.styles.css" asp-append-version="true" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* ========================================
+                   KOCAYUSUF MAKİNA - TASARIM SİSTEMİ
+                   ======================================== */
+        :root {
+            --ky-bg: #0B0E14;
+            --ky-bg-elevated: #141922;
+            --ky-bg-elevated-2: #1B212C;
+            --ky-border: rgba(255,255,255,0.08);
+            --ky-border-strong: rgba(255,255,255,0.14);
+            --ky-text: #E7EAF0;
+            --ky-text-muted: #8A93A6;
+            --ky-accent: #F5A623;
+            --ky-accent-soft: rgba(245,166,35,0.12);
+            --ky-success: #3DD68C;
+            --ky-success-soft: rgba(61,214,140,0.12);
+            --ky-danger: #FF5C5C;
+            --ky-danger-soft: rgba(255,92,92,0.12);
+            --ky-info: #5B8DEF;
+            --ky-info-soft: rgba(91,141,239,0.12);
+            --ky-radius: 14px;
+            --ky-radius-sm: 9px;
+            --bs-body-bg: var(--ky-bg);
+            --bs-body-color: var(--ky-text);
+            --bs-border-color: var(--ky-border);
+            --bs-primary: var(--ky-info);
+            --bs-primary-rgb: 91,141,239;
+            --bs-success: var(--ky-success);
+            --bs-success-rgb: 61,214,140;
+            --bs-warning: var(--ky-accent);
+            --bs-warning-rgb: 245,166,35;
+            --bs-danger: var(--ky-danger);
+            --bs-danger-rgb: 255,92,92;
+            --bs-info: var(--ky-info);
+            --bs-info-rgb: 91,141,239;
+            --bs-dark: var(--ky-bg-elevated);
+            --bs-dark-rgb: 20,25,34;
+            --bs-secondary: var(--ky-text-muted);
+            --bs-secondary-rgb: 138,147,166;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            background-color: var(--ky-bg) !important;
+            color: var(--ky-text);
+            font-family: 'Inter', -apple-system, sans-serif;
+            font-feature-settings: "cv02","cv03","cv04","cv11";
+        }
+
+        body {
+            background-image: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 42px 42px;
+            background-attachment: fixed;
+        }
+
+        h1, h2, h3, h4, h5, h6, .ky-display {
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: -0.01em;
+            font-weight: 600;
+        }
+
+        code, .metric-val, .lcd-text, .ky-mono, table td, table th {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .ky-navbar {
+            background: linear-gradient(180deg, var(--ky-bg-elevated) 0%, rgba(20,25,34,0.85) 100%);
+            border: 1px solid var(--ky-border);
+            border-radius: var(--ky-radius);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 12px;
+            z-index: 1000;
+        }
+
+        .ky-logo-mark {
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, var(--ky-accent) 0%, #d68512 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #14171c;
+            box-shadow: 0 4px 14px -4px rgba(245,166,35,0.5);
+            flex-shrink: 0;
+        }
+
+        .ky-brand-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: var(--ky-text);
+            letter-spacing: 0.01em;
+            line-height: 1.1;
+        }
+
+        .ky-brand-sub {
+            font-size: 0.68rem;
+            color: var(--ky-text-muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .ky-nav-link {
+            color: var(--ky-text-muted) !important;
+            font-size: 0.88rem;
+            font-weight: 500;
+            padding: 0.5rem 0.85rem !important;
+            border-radius: var(--ky-radius-sm);
+            transition: all 0.15s ease;
+            position: relative;
+        }
+
+            .ky-nav-link:hover {
+                color: var(--ky-text) !important;
+                background: rgba(255,255,255,0.04);
+            }
+
+            .ky-nav-link.active {
+                color: var(--ky-accent) !important;
+                background: var(--ky-accent-soft);
+            }
+
+        .ky-status-pill {
+            background: var(--ky-success-soft);
+            border: 1px solid rgba(61,214,140,0.25);
+            color: var(--ky-success);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .ky-status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--ky-success);
+            box-shadow: 0 0 0 3px var(--ky-success-soft);
+            animation: ky-pulse 2s infinite;
+        }
+
+        @@keyframes ky-pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .ky-card, .scada-card {
+            background: var(--ky-bg-elevated) !important;
+            border: 1px solid var(--ky-border) !important;
+            border-radius: var(--ky-radius) !important;
+            box-shadow: 0 20px 40px -24px rgba(0,0,0,0.65);
+        }
+
+        .card, .table-dark, .bg-dark {
+            background-color: var(--ky-bg-elevated) !important;
+        }
+
+        .card {
+            border: 1px solid var(--ky-border) !important;
+            border-radius: var(--ky-radius) !important;
+        }
+
+        .ky-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem;
+            font-weight: 500;
+            color: var(--ky-text-muted);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--ky-border);
+            padding: 0.1rem 0.45rem;
+            border-radius: 5px;
+            letter-spacing: 0.02em;
+        }
+
+        .btn {
+            border-radius: var(--ky-radius-sm);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        ::selection {
+            background: var(--ky-accent-soft);
+            color: var(--ky-accent);
+        }
+
+        a:focus-visible, button:focus-visible, input:focus-visible {
+            outline: 2px solid var(--ky-accent);
+            outline-offset: 2px;
+        }
+
+        @@media (prefers-reduced-motion: reduce) {
+            .ky-status-dot, .pulse-dot {
+                animation: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-3" style="max-width: 1600px;">
+        <nav class="ky-navbar navbar navbar-expand-lg mb-4 px-3 py-2">
+            <div class="d-flex align-items-center gap-2" style="min-width: 0;">
+                <a href="/Home/Index" class="d-flex align-items-center gap-2 text-decoration-none">
+                    <img src="~/resimler/kocayusuf_logo_with_circle.png" alt="KocaYusuf Makina Logo" style="width: 40px; height: 40px; object-fit: contain; border-radius: 50%; filter: brightness(0) invert(1);" />
+                    <span class="d-none d-sm-block">
+                        <span class="ky-brand-name d-block">KOCAYUSUF MAKİNA</span>
+                        <span class="ky-brand-sub d-block">Telemetri &amp; SCADA</span>
+                    </span>
+                </a>
+            </div>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Menüyü aç/kapat" style="color: var(--ky-text);">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse justify-content-between" id="navbarNav">
+                <ul class="navbar-nav gap-1 mt-3 mt-lg-0 mx-lg-3">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Home/CanliIzleme">
+                            <i class="fas fa-desktop"></i> Canlı İzleme (Dijital İkiz)
+                        </a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link ky-nav-link active" href="/Home/Index">Canlı Panel</a></li>
+                    <li class="nav-item"><a class="nav-link ky-nav-link" href="/Home/ServisIO">Servis / I/O</a></li>
+                    <li class="nav-item"><a class="nav-link ky-nav-link" href="/Home/GecmisVeriler">Geçmiş Veriler</a></li>
+                    <li class="nav-item"><a class="nav-link ky-nav-link" href="/Home/AlarmGecmisi">Alarm Geçmişi</a></li>
+                    <li class="nav-item"><a class="nav-link ky-nav-link" href="/Home/MakineHakkinda">Makine Hakkında</a></li>
+                    <li class="nav-item"><a class="nav-link ky-nav-link" href="/Home/Hakkimizda">Hakkımızda</a></li>
+                    <li class="nav-item"><a class="nav-link ky-nav-link" href="/Home/Iletisim">İletişim</a></li>
+                </ul>
+                <div class="mt-3 mt-lg-0">
+                    <span class="ky-status-pill"><span class="ky-status-dot"></span> Sistem Çevrimiçi</span>
+                </div>
+            </div>
+        </nav>
+
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        (function () {
+            var yol = window.location.pathname.toLowerCase();
+            document.querySelectorAll('.ky-nav-link').forEach(function (link) {
+                var href = link.getAttribute('href').toLowerCase();
+                var eslesiyor = (yol === href) || (href !== '/home/index' && yol.startsWith(href));
+                link.classList.toggle('active', eslesiyor);
+            });
+        })();
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

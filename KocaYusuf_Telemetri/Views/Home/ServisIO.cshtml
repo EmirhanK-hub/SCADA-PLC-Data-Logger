@@ -1,0 +1,413 @@
+﻿@{
+    ViewData["Title"] = "Servis ve I/O Diagnostik";
+}
+
+<style>
+    .ky-section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        padding: 1.1rem 1.4rem;
+        border-bottom: 1px solid var(--ky-border);
+    }
+
+    .ky-section-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+
+    .ky-section-header h5 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .ky-section-count {
+        margin-left: auto;
+        font-size: 0.7rem;
+        color: var(--ky-text-muted);
+        background: rgba(255,255,255,0.05);
+        padding: 0.2rem 0.6rem;
+        border-radius: 999px;
+    }
+
+    /* --- Analog metrik kartları --- */
+    .ky-chip-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.7rem;
+        padding: 1.2rem 1.3rem;
+    }
+
+    .ky-analog-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .ky-analog-cell {
+        background: var(--ky-bg-elevated);
+        padding: 1.1rem 1.3rem;
+        border-right: 1px solid var(--ky-border);
+        border-bottom: 1px solid var(--ky-border);
+    }
+
+    @@media (min-width: 992px) {
+        .ky-analog-cell:nth-child(4n) {
+            border-right: none;
+        }
+
+        .ky-analog-cell:nth-child(n+5) {
+            border-bottom: none;
+        }
+    }
+
+    @@media (max-width: 991px) {
+        .ky-chip-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .ky-analog-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .ky-analog-cell:nth-child(3n) {
+            border-right: none;
+        }
+
+        .ky-analog-cell:nth-child(n+7) {
+            border-bottom: none;
+        }
+    }
+
+    @@media (max-width: 767px) {
+        .ky-chip-grid {
+            grid-template-columns: repeat(2, 1fr);
+            padding: 1rem;
+        }
+
+        .ky-analog-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .ky-analog-cell:nth-child(2n) {
+            border-right: none;
+        }
+
+        .ky-analog-cell:nth-child(n+7) {
+            border-bottom: none;
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .ky-chip-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .ky-analog-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .ky-analog-cell {
+            border-right: none;
+        }
+
+            .ky-analog-cell:last-child {
+                border-bottom: none;
+            }
+    }
+
+    .ky-analog-cell .lbl {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.72rem;
+        color: var(--ky-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+    }
+
+    .ky-analog-cell .val {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 1.5rem;
+        font-weight: 600;
+        line-height: 1;
+    }
+
+        .ky-analog-cell .val .unit {
+            font-size: 0.8rem;
+            color: var(--ky-text-muted);
+            font-weight: 500;
+            margin-left: 0.2rem;
+        }
+
+    /* --- Bit çipleri --- */
+    .ky-bit-chip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.6rem;
+        background: var(--ky-bg-elevated-2);
+        border: 1px solid var(--ky-border);
+        border-radius: var(--ky-radius-sm);
+        padding: 0.7rem 0.9rem;
+        transition: border-color 0.2s ease, transform 0.15s ease;
+    }
+
+        .ky-bit-chip:hover {
+            border-color: var(--ky-border-strong);
+            transform: translateY(-1px);
+        }
+
+        .ky-bit-chip.ky-chip-active {
+            border-color: rgba(61,214,140,0.35);
+            background: linear-gradient(120deg, var(--ky-success-soft), var(--ky-bg-elevated-2) 70%);
+        }
+
+    .ky-bit-chip-label {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        min-width: 0;
+    }
+
+    .ky-bit-chip-name {
+        font-size: 0.85rem;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .ky-bit-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.15);
+        flex-shrink: 0;
+    }
+
+    .ky-bit-chip.ky-chip-active .ky-bit-dot {
+        background: var(--ky-success);
+        box-shadow: 0 0 8px rgba(61,214,140,0.7);
+    }
+
+    .ky-bit-status-text {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: var(--ky-text-muted);
+        flex-shrink: 0;
+    }
+
+    .ky-bit-chip.ky-chip-active .ky-bit-status-text {
+        color: var(--ky-success);
+    }
+</style>
+
+<div class="ky-hero">
+    <span class="ky-hero-eyebrow"><i class="fas fa-microchip"></i> Diagnostik</span>
+    <h1>Servis / I/O Paneli</h1>
+    <p>PLC register ve bit seviyesinde canlı teknik izleme</p>
+</div>
+
+<!-- ANALOG DEĞERLER -->
+<div class="ky-card mb-4">
+    <div class="ky-section-header">
+        <span class="ky-section-icon" style="background: var(--ky-accent-soft); color: var(--ky-accent);"><i class="fas fa-gauge-high"></i></span>
+        <h5>Analog Proses Değerleri</h5>
+    </div>
+    <div class="ky-analog-grid">
+        <div class="ky-analog-cell">
+            <span class="lbl">Hidrolik Basınç <span class="ky-tag">DT110</span></span>
+            <span class="val" style="color: var(--ky-accent);" id="val_hid">–</span>
+        </div>
+        <div class="ky-analog-cell">
+            <span class="lbl">Ana Hava Basıncı <span class="ky-tag">DT112</span></span>
+            <span class="val" style="color: var(--ky-accent);" id="val_hava">–</span>
+        </div>
+        <div class="ky-analog-cell">
+            <span class="lbl">Ara Hava Basıncı <span class="ky-tag">DT212</span></span>
+            <span class="val" style="color: var(--ky-accent);" id="val_ara">–</span>
+        </div>
+        <div class="ky-analog-cell">
+            <span class="lbl">Balon Sıcaklığı <span class="ky-tag">DT126</span></span>
+            <span class="val" style="color: var(--ky-danger);"><span id="val_balon">–</span> <span class="unit">°C</span></span>
+        </div>
+        <div class="ky-analog-cell">
+            <span class="lbl">Pres Sıcaklığı <span class="ky-tag">DT82</span></span>
+            <span class="val" style="color: var(--ky-danger);"><span id="val_pres">–</span> <span class="unit">/ <span id="val_presset">–</span> °C</span></span>
+        </div>
+        <div class="ky-analog-cell">
+            <span class="lbl">Üretim Sayacı <span class="ky-tag">R36</span></span>
+            <span class="val" style="color: var(--ky-success);" id="val_uretim">–</span>
+        </div>
+        <div class="ky-analog-cell">
+            <span class="lbl">Genel Durum Kodu <span class="ky-tag">DT36</span></span>
+            <span class="val" style="color: var(--ky-info);" id="val_durumkodu">–</span>
+        </div>
+        <div class="ky-analog-cell">
+            <span class="lbl text-warning">HMI Mesaj Kodu <span class="ky-tag text-dark">DT60</span></span>
+            <span class="val" style="color: var(--ky-warning);" id="val_dt60">–</span>
+        </div>
+    </div>
+</div>
+
+<div class="ky-card mb-4">
+    <div class="ky-section-header">
+        <span class="ky-section-icon" style="background: var(--ky-info-soft); color: var(--ky-info);"><i class="fas fa-server"></i></span>
+        <h5>Sistem Durum Registerleri (R)</h5>
+        <span class="ky-section-count">13 bit</span>
+    </div>
+    <div class="ky-chip-grid">
+        <div class="ky-bit-chip" id="chip_r5"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Makine Çalışıyor</span><span class="ky-tag">R5</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_r5">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_r7"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Makine Hazır</span><span class="ky-tag">R7</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_r7">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_r16"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Çevrim Aktif</span><span class="ky-tag">R16</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_r16">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_r36"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Çevrim Tamamlandı</span><span class="ky-tag">R36</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_r36">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_r300"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Manuel Mod</span><span class="ky-tag">R300</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_r300">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_r301"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Otomatik Mod</span><span class="ky-tag">R301</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_r301">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_r32"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name text-danger">Genel Hata</span><span class="ky-tag">R32</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_r32">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_r9e"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name text-danger">Genel Hata 2</span><span class="ky-tag">R9E</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_r9e">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_r98"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name text-danger">Acil Stop Hafızası</span><span class="ky-tag">R98</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_r98">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_r135"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name text-danger">Termik Attı</span><span class="ky-tag">R135</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_r135">…</span><span class="ky-bit-dot"></span></div></div>
+
+        <div class="ky-bit-chip" id="chip_r2485"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name text-info">Çalışma Tipi 1</span><span class="ky-tag text-dark">R2485</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_r2485">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_r2486"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name text-info">Çalışma Tipi 2</span><span class="ky-tag text-dark">R2486</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_r2486">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_r2487"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name text-info">Çalışma Tipi 3</span><span class="ky-tag text-dark">R2487</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_r2487">…</span><span class="ky-bit-dot"></span></div></div>
+    </div>
+</div>
+
+<div class="ky-card mb-4">
+    <div class="ky-section-header">
+        <span class="ky-section-icon" style="background: rgba(201,156,241,0.12); color: #C99CF1;"><i class="fas fa-arrow-right-to-bracket"></i></span>
+        <h5>Donanımsal Girişler (X)</h5>
+        <span class="ky-section-count">9 bit</span>
+    </div>
+    <div class="ky-chip-grid">
+        <div class="ky-bit-chip" id="chip_x0"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Start Butonu</span><span class="ky-tag">X0</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_x0">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_x1"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Stop Butonu</span><span class="ky-tag">X1</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_x1">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_x2"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Hazır Switch</span><span class="ky-tag">X2</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_x2">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_x4"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name text-danger">Acil Stop</span><span class="ky-tag">X4</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_x4">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_x6"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Son Switch</span><span class="ky-tag">X6</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_x6">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_x8"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Yağ Motoru Termik</span><span class="ky-tag">X8</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_x8">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_x9"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Basınç Motoru Termik</span><span class="ky-tag">X9</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_x9">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_xa"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Vakum Motoru Termik</span><span class="ky-tag">XA</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_xa">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_x60"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Vakostat</span><span class="ky-tag">X60</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_x60">…</span><span class="ky-bit-dot"></span></div></div>
+    </div>
+</div>
+
+<div class="ky-card mb-4">
+    <div class="ky-section-header">
+        <span class="ky-section-icon" style="background: var(--ky-success-soft); color: var(--ky-success);"><i class="fas fa-bolt"></i></span>
+        <h5>Aktüatör ve Valf Çıkışları (Y)</h5>
+        <span class="ky-section-count">13 bit</span>
+    </div>
+    <div class="ky-chip-grid">
+        <div class="ky-bit-chip" id="chip_y1"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Hidrolik Basınç Motoru</span><span class="ky-tag">Y1</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_y1">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_y60"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name text-info">Vakum Pompası</span><span class="ky-tag text-dark">Y60</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_y60">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_y61"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name text-info">Yağ Sirkülasyon</span><span class="ky-tag text-dark">Y61</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_y61">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_y62"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name text-info">Yağ Isıtıcı</span><span class="ky-tag text-dark">Y62</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_y62">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_y63"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name text-info">Hava Isıtıcı</span><span class="ky-tag text-dark">Y63</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_y63">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_y2"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Solenoid Valf S1</span><span class="ky-tag">Y2</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_y2">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_y3"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Solenoid Valf S2</span><span class="ky-tag">Y3</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_y3">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_y4"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Solenoid Valf S3</span><span class="ky-tag">Y4</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_y4">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_yc"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Solenoid Valf S11</span><span class="ky-tag">YC</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_yc">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_yd"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Solenoid Valf S12</span><span class="ky-tag">YD</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_yd">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_ye"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Solenoid Valf S13</span><span class="ky-tag">YE</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_ye">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_yf"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Solenoid Valf S14</span><span class="ky-tag">YF</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_yf">…</span><span class="ky-bit-dot"></span></div></div>
+        <div class="ky-bit-chip" id="chip_y64"><div class="ky-bit-chip-label"><span class="ky-bit-chip-name">Solenoid Valf S16</span><span class="ky-tag">Y64</span></div><div class="d-flex align-items-center gap-2"><span class="ky-bit-status-text" id="bit_y64">…</span><span class="ky-bit-dot"></span></div></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function bitGuncelle(elementId, deger) {
+            var textEl = document.getElementById(elementId);
+            if (!textEl) return;
+            var chipEl = document.getElementById('chip_' + elementId.replace('bit_', ''));
+
+            if (deger) {
+                textEl.innerText = "AKTİF";
+                if (chipEl) chipEl.classList.add('ky-chip-active');
+            } else {
+                textEl.innerText = "PASİF";
+                if (chipEl) chipEl.classList.remove('ky-chip-active');
+            }
+        }
+
+        function servisVeriCek() {
+            fetch('/Home/CanliVeriGetir')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data) return;
+
+                    // Analog Değerler (Modeldeki property isimleriyle tam uyumlu)
+                    document.getElementById('val_hid').innerHTML = (data.dt110_HidrolikBasincHMI ?? data.dT110_HidrolikBasincHMI ?? "-") + " <span class=\"unit\">bar</span>";
+                    document.getElementById('val_hava').innerHTML = (data.dt112_AnaHavaBasinciHMI ?? data.dT112_AnaHavaBasinciHMI ?? "-") + " <span class=\"unit\">bar</span>";
+                    document.getElementById('val_ara').innerHTML = (data.dt212_AraHavaBasinciHMI ?? data.dT212_AraHavaBasinciHMI ?? "-") + " <span class=\"unit\">bar</span>";
+
+                    document.getElementById('val_balon').innerText = data.balonSicakligi ?? "-";
+                    document.getElementById('val_pres').innerText = data.presSicakligi ?? "-";
+                    document.getElementById('val_presset').innerText = data.dT32538_PresSicaklikSet ?? data.dt32538_PresSicaklikSet ?? "-";
+
+                    document.getElementById('val_uretim').innerText = data.uretimAdedi ?? "-";
+                    document.getElementById('val_durumkodu').innerText = data.genelDurumKodu ?? "-";
+
+                    const dt60Value = data.dT60_IstenenHMIMesaji ?? data.dt60_IstenenHMIMesaji;
+                    document.getElementById('val_dt60').innerText = dt60Value != null ? "K" + dt60Value : "-";
+
+                    // Durum Bitleri (R) - Modeldeki güncel isimlerle eşleştirildi
+                    bitGuncelle('bit_r5', data.r5_MakineCalisiyor);
+                    bitGuncelle('bit_r7', data.r7_MakineHazir);
+                    bitGuncelle('bit_r16', data.r16_CevrimAktif);
+                    bitGuncelle('bit_r36', data.r36_CevrimTamamlandi);
+                    bitGuncelle('bit_r300', data.r300_ManuelMod);
+                    bitGuncelle('bit_r301', data.r301_OtomatikMod);
+                    bitGuncelle('bit_r32', data.r32_GenelHata);
+                    bitGuncelle('bit_r9e', data.r9E_GenelHata2 ?? data.r9e_GenelHata2);
+                    bitGuncelle('bit_r98', data.r98_AcilStopHafizasi);
+                    bitGuncelle('bit_r135', data.r135_TermikAtti);
+
+                    bitGuncelle('bit_r2485', data.r2485_CalismaTipi1);
+                    bitGuncelle('bit_r2486', data.r2486_CalismaTipi2);
+                    bitGuncelle('bit_r2487', data.r2487_CalismaTipi3);
+
+                    // Donanımsal Girişler (X)
+                    bitGuncelle('bit_x0', data.x0_StartButonu);
+                    bitGuncelle('bit_x1', data.x1_StopButonu);
+                    bitGuncelle('bit_x2', data.x2_HazirSwitch);
+                    bitGuncelle('bit_x4', data.x4_AcilStop);
+                    bitGuncelle('bit_x6', data.x6_SonSwitch);
+                    bitGuncelle('bit_x8', data.x8_YagMotoruTermik);
+                    bitGuncelle('bit_x9', data.x9_BasincMotoruTermik);
+                    bitGuncelle('bit_xa', data.xa_VakumMotoruTermik ?? data.xA_VakumMotoruTermik);
+                    bitGuncelle('bit_x60', data.x60_Vakostat);
+
+                    // Aktüatör ve Valf Çıkışları (Y)
+                    bitGuncelle('bit_y1', data.y1_HidrolikBasincMotoru);
+                    bitGuncelle('bit_y60', data.y60_VakumPompasi);
+                    bitGuncelle('bit_y61', data.y61_YagSirkulasyonPompasi);
+                    bitGuncelle('bit_y62', data.y62_YagIsitici);
+                    bitGuncelle('bit_y63', data.y63_HavaIsitici);
+                    bitGuncelle('bit_y2', data.y2_SolenoidValfS1);
+                    bitGuncelle('bit_y3', data.y3_SolenoidValfS2);
+                    bitGuncelle('bit_y4', data.y4_SolenoidValfS3);
+                    bitGuncelle('bit_yc', data.yc_SolenoidValfS11 ?? data.yC_SolenoidValfS11);
+                    bitGuncelle('bit_yd', data.yd_SolenoidValfS12 ?? data.yD_SolenoidValfS12);
+                    bitGuncelle('bit_ye', data.ye_SolenoidValfS13 ?? data.yE_SolenoidValfS13);
+                    bitGuncelle('bit_yf', data.yf_SolenoidValfS14 ?? data.yF_SolenoidValfS14);
+                    bitGuncelle('bit_y64', data.y64_SolenoidValfS16);
+                })
+                .catch(error => console.error('Servis veri çekme hatası:', error));
+        }
+
+        servisVeriCek();
+        setInterval(servisVeriCek, 1000);
+    </script>
+}
